@@ -1803,7 +1803,10 @@ fn init_watchdog() {
 
         let config = esp_idf_sys::esp_task_wdt_config_t {
             timeout_ms: WATCHDOG_TIMEOUT_SEC * 1000,
-            idle_core_mask: 0,
+            // Exclude idle task on both cores from WDT (it's blocked in
+            // xt_utils_wait_for_intr and never calls esp_task_wdt_reset).
+            // Bit 0 = CPU0, Bit 1 = CPU1.
+            idle_core_mask: 0x3,
             trigger_panic: true,
         };
         esp_idf_sys::esp_task_wdt_init(&config);
