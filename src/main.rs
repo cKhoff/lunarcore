@@ -1803,15 +1803,31 @@ fn init_watchdog() {
 
         let config = esp_idf_sys::esp_task_wdt_config_t {
             timeout_ms: WATCHDOG_TIMEOUT_SEC * 1000,
-            // Exclude idle task on both cores from WDT (it's blocked in
-            // xt_utils_wait_for_intr and never calls esp_task_wdt_reset).
-            // Bit 0 = CPU0, Bit 1 = CPU1.
+            // Subscribe idle tasks on both cores so they get fed via
+            // the idle hook below. Without this the idle task panics
+            // in xt_utils_wait_for_intr after the timeout.
             idle_core_mask: 0x3,
             trigger_panic: true,
         };
         esp_idf_sys::esp_task_wdt_init(&config);
         esp_idf_sys::esp_task_wdt_add(core::ptr::null_mut());
+
+        // Feed the WDT from the idle hook so the idle task never times out.
+        let cb: esp_idf_sys::esp_freertos_idle_cb_t = Some(idle_hook);
+        esp_idf_sys::esp_register_freertos_idle_hook_for_cpu(
+            cb,
+            0, // CPU0
+        );
+        esp_idf_sys::esp_register_freertos_idle_hook_for_cpu(
+            cb,
+            1, // CPU1
+        );
     }
+}
+
+unsafe extern "C" fn idle_hook() -> bool {
+    esp_idf_sys::esp_task_wdt_reset();
+    true
 }
 
 
