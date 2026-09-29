@@ -1184,32 +1184,32 @@ where
                 self.stats.protocol_switches += 1;
                 log::info!("Protocol detected: {}", protocol.name());
 
-
                 self.configure_radio_for_protocol(protocol);
 
-
+                // Feed the triggering byte to the newly-selected parser.
+                // The detector consumed it for detection; the parser needs
+                // to see it as its first input (sync byte / FEND / 'A').
                 match protocol {
                     Protocol::MeshCore => {
-
-
-                        self.meshcore_parser.feed(0xAA);
+                        // byte is 0xAA (first sync) — feed it to start parsing
+                        self.meshcore_parser.feed(byte);
                     }
                     Protocol::Meshtastic => {
-
-
-                        self.meshtastic.feed_serial(0x94);
+                        // byte is 0x94 (first sync) — feed it to start parsing
+                        self.meshtastic.feed_serial(byte);
                     }
                     Protocol::RNode => {
-
-
+                        // KISS: byte is FEND (0xC0) — feed to KissParser
+                        self.rnode.feed_serial(byte);
                     }
                     Protocol::AtCommand => {
-
-
+                        // byte is 'A' — start the AT buffer
                         let _ = self.at_buffer.push(b'A');
                     }
                     Protocol::Unknown => {}
                 }
+                // Detection consumed this byte; don't fall through.
+                return;
             }
         }
 
