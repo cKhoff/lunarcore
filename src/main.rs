@@ -2045,7 +2045,10 @@ fn run_lunarcore() -> ! {
     let peripherals = Peripherals::take().unwrap();
 
 
-    let mut led_pin = PinDriver::output(peripherals.pins.gpio35).unwrap();
+    #[cfg(not(feature = "heltec-v3"))]
+    let mut led_pin = PinDriver::output(peripherals.pins.gpio37).unwrap(); // T3-S3 LED
+    #[cfg(feature = "heltec-v3")]
+    let mut led_pin = PinDriver::output(peripherals.pins.gpio35).unwrap(); // Heltec V3 LED
     led_pin.set_low().unwrap();
     let mut vext_pin = PinDriver::output(peripherals.pins.gpio36).unwrap();
     vext_pin.set_low().unwrap();
@@ -2059,10 +2062,20 @@ fn run_lunarcore() -> ! {
     oled_rst.set_high().unwrap();
     FreeRtos::delay_ms(10);
     let i2c_config = I2cConfig::new().baudrate(Hertz(400_000));
+    #[cfg(not(feature = "heltec-v3"))]
+    // T3-S3: SDA=GPIO18, SCL=GPIO17
     let i2c = I2cDriver::new(
         peripherals.i2c0,
-        peripherals.pins.gpio17,
-        peripherals.pins.gpio18,
+        peripherals.pins.gpio18, // SDA
+        peripherals.pins.gpio17, // SCL
+        &i2c_config,
+    ).unwrap();
+    #[cfg(feature = "heltec-v3")]
+    // Heltec V3: SDA=GPIO17, SCL=GPIO18
+    let i2c = I2cDriver::new(
+        peripherals.i2c0,
+        peripherals.pins.gpio17, // SDA
+        peripherals.pins.gpio18, // SCL
         &i2c_config,
     ).unwrap();
     let mut status_display = StatusDisplay::new(i2c);
@@ -2076,18 +2089,44 @@ fn run_lunarcore() -> ! {
     let spi_config = esp_idf_hal::spi::config::Config::new()
         .baudrate(Hertz(8_000_000))
         .data_mode(embedded_hal::spi::MODE_0);
+    #[cfg(not(feature = "heltec-v3"))]
+    // T3-S3: SCK=5, MOSI=6, MISO=3
     let spi = SpiDeviceDriver::new_single(
         peripherals.spi2,
-        peripherals.pins.gpio9,
-        peripherals.pins.gpio10,
-        Some(peripherals.pins.gpio11),
+        peripherals.pins.gpio5,  // SCK
+        peripherals.pins.gpio6,  // MOSI (SDO)
+        Some(peripherals.pins.gpio3), // MISO (SDI)
         Option::<Gpio0>::None,
         &SpiDriverConfig::default(),
         &spi_config,
     ).unwrap();
+    #[cfg(not(feature = "heltec-v3"))]
+    let nss = PinDriver::output(peripherals.pins.gpio7).unwrap();
+    #[cfg(not(feature = "heltec-v3"))]
+    let reset = PinDriver::output(peripherals.pins.gpio8).unwrap();
+    #[cfg(not(feature = "heltec-v3"))]
+    let busy = PinDriver::input(peripherals.pins.gpio34).unwrap();
+    #[cfg(not(feature = "heltec-v3"))]
+    let mut dio1 = PinDriver::input(peripherals.pins.gpio33).unwrap();
+
+    #[cfg(feature = "heltec-v3")]
+    // Heltec V3: SCK=9, MOSI=10, MISO=11
+    let spi = SpiDeviceDriver::new_single(
+        peripherals.spi2,
+        peripherals.pins.gpio9,  // SCK
+        peripherals.pins.gpio10, // MOSI (SDO)
+        Some(peripherals.pins.gpio11), // MISO (SDI)
+        Option::<Gpio0>::None,
+        &SpiDriverConfig::default(),
+        &spi_config,
+    ).unwrap();
+    #[cfg(feature = "heltec-v3")]
     let nss = PinDriver::output(peripherals.pins.gpio8).unwrap();
+    #[cfg(feature = "heltec-v3")]
     let reset = PinDriver::output(peripherals.pins.gpio12).unwrap();
+    #[cfg(feature = "heltec-v3")]
     let busy = PinDriver::input(peripherals.pins.gpio13).unwrap();
+    #[cfg(feature = "heltec-v3")]
     let mut dio1 = PinDriver::input(peripherals.pins.gpio14).unwrap();
     dio1.set_pull(Pull::Down).unwrap();
     dio1.set_interrupt_type(esp_idf_hal::gpio::InterruptType::PosEdge).unwrap();
