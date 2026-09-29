@@ -126,7 +126,7 @@ pub struct RadioConfig {
 impl Default for RadioConfig {
     fn default() -> Self {
         Self {
-            frequency: 868_100_000,
+            frequency: 869_525_000,
             spreading_factor: 9,
             bandwidth: 0x04,
             coding_rate: 1,

@@ -78,7 +78,10 @@ const BAUD_RATE: u32 = 115200;
 const RX_BUFFER_SIZE: usize = 512;
 
 
-const DEFAULT_FREQUENCY: u32 = 868_100_000;
+/// EU868 500 mW EIRP sub-band (IR2030/1/19, EN 300 220-2):
+/// 869.4–869.65 MHz, max 27 dBm ERP (500 mW), 10% duty cycle.
+/// Standard centre frequency: 869.525 MHz.
+const DEFAULT_FREQUENCY: u32 = 869_525_000;
 
 
 const BATTERY_DIVIDER_RATIO: f32 = 4.9;
@@ -1302,7 +1305,7 @@ where
     fn configure_radio_for_protocol(&mut self, protocol: Protocol) {
         let config = match protocol {
             Protocol::MeshCore => RadioConfig {
-                frequency: 868_100_000,
+                frequency: 869_525_000,
                 spreading_factor: 7,
                 bandwidth: 0x03,
                 coding_rate: 1,
@@ -2199,7 +2202,7 @@ fn run_lunarcore() -> ! {
 
 
     let meshcore_config = RadioConfig {
-        frequency: 868_100_000,
+        frequency: 869_525_000,
         spreading_factor: 7,
         bandwidth: 0x03,
         coding_rate: 1,
@@ -2211,7 +2214,7 @@ fn run_lunarcore() -> ! {
         ldro: false,
     };
     if lunarcore.radio.configure(&meshcore_config).is_ok() {
-        log::info!("[INIT] Radio configured for MeshCore (868.1MHz EU868, SF7, 62.5kHz, private sync)");
+        log::info!("[INIT] Radio configured for MeshCore (869.525MHz EU868 500mW, SF7, 62.5kHz, private sync)");
     }
 
 
