@@ -78,7 +78,7 @@ const BAUD_RATE: u32 = 115200;
 const RX_BUFFER_SIZE: usize = 512;
 
 
-const DEFAULT_FREQUENCY: u32 = 915_000_000;
+const DEFAULT_FREQUENCY: u32 = 868_100_000;
 
 
 const BATTERY_DIVIDER_RATIO: f32 = 4.9;
@@ -1302,7 +1302,7 @@ where
     fn configure_radio_for_protocol(&mut self, protocol: Protocol) {
         let config = match protocol {
             Protocol::MeshCore => RadioConfig {
-                frequency: 910_525_000,
+                frequency: 868_100_000,
                 spreading_factor: 7,
                 bandwidth: 0x03,
                 coding_rate: 1,
@@ -1314,7 +1314,7 @@ where
                 ldro: false,
             },
             Protocol::Meshtastic => RadioConfig {
-                frequency: 906_875_000,
+                frequency: 869_525_000,
                 spreading_factor: 11,
                 bandwidth: 0x04,
                 coding_rate: 1,
@@ -1854,10 +1854,9 @@ fn init_watchdog() {
             trigger_panic: true,
         };
         let ret = esp_idf_sys::esp_task_wdt_init(&config);
-        if ret != esp_idf_sys::esp_err_t::ESP_OK
-            && ret != esp_idf_sys::esp_err_t::ESP_ERR_INVALID_STATE
-        {
-            log::warn!("[WDT] init returned {:?} (non-fatal)", ret);
+        // ESP_OK = 0, ESP_ERR_INVALID_STATE = 0x103 (259)
+        if ret != 0 && ret != 0x103 {
+            log::warn!("[WDT] init returned {} (non-fatal)", ret);
         }
         esp_idf_sys::esp_task_wdt_add(core::ptr::null_mut());
 
@@ -2200,7 +2199,7 @@ fn run_lunarcore() -> ! {
 
 
     let meshcore_config = RadioConfig {
-        frequency: 910_525_000,
+        frequency: 868_100_000,
         spreading_factor: 7,
         bandwidth: 0x03,
         coding_rate: 1,
@@ -2212,7 +2211,7 @@ fn run_lunarcore() -> ! {
         ldro: false,
     };
     if lunarcore.radio.configure(&meshcore_config).is_ok() {
-        log::info!("[INIT] Radio configured for MeshCore (910.525MHz, SF7, 62.5kHz, private sync)");
+        log::info!("[INIT] Radio configured for MeshCore (868.1MHz EU868, SF7, 62.5kHz, private sync)");
     }
 
 
