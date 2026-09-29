@@ -1306,6 +1306,7 @@ where
         let config = match protocol {
             Protocol::MeshCore => RadioConfig {
                 frequency: 869_525_000,
+                // MeshCore standard: SF7 / 62.5 kHz / CR4/6 for low-latency mesh
                 spreading_factor: 7,
                 bandwidth: 0x03,
                 coding_rate: 1,
@@ -1316,18 +1317,29 @@ where
                 implicit_header: false,
                 ldro: false,
             },
-            Protocol::Meshtastic => RadioConfig {
-                frequency: 869_525_000,
-                spreading_factor: 11,
-                bandwidth: 0x04,
-                coding_rate: 1,
-                tx_power: 17,
-                sync_word: 0x2B,
-                preamble_length: 16,
-                crc_enabled: true,
-                implicit_header: false,
-                ldro: true,
-            },
+            Protocol::Meshtastic => {
+                // Pull SF/BW/CR from Meshtastic's own default modem preset
+                let lp = meshtastic::channel::ModemPreset::default().lora_params();
+                RadioConfig {
+                    frequency: 869_525_000,
+                    spreading_factor: lp.spreading_factor,
+                    bandwidth: match lp.bandwidth {
+                        62_500 => 0x03,
+                        125_000 => 0x04,
+                        250_000 => 0x05,
+                        500_000 => 0x06,
+                        _ => 0x04,
+                    },
+                    // LoraParams.coding_rate is 1-8 (CR4/x); SX1262 wants 0-3 (CR4/(x+1))
+                    coding_rate: (lp.coding_rate.saturating_sub(1)).min(3),
+                    tx_power: 17,
+                    sync_word: 0x2B,
+                    preamble_length: 16,
+                    crc_enabled: true,
+                    implicit_header: false,
+                    ldro: true,
+                }
+            }
             Protocol::RNode => {
 
                 let cfg = self.rnode.config();
