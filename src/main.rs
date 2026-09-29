@@ -2024,7 +2024,7 @@ fn main() -> ! {
 
 
     unsafe {
-        esp_idf_sys::esp_log_level_set(b"*\0".as_ptr() as *const _, esp_idf_sys::esp_log_level_t_ESP_LOG_NONE);
+        esp_idf_sys::esp_log_level_set(b"*\0".as_ptr() as *const _, esp_idf_sys::esp_log_level_t_ESP_LOG_INFO);
     }
 
 
