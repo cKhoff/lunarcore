@@ -104,26 +104,66 @@ const LED_BLINK_ACTIVE: u32 = 500;
 const LED_BLINK_ERROR: u32 = 100;
 
 
+// ─── Board pin configuration ────────────────────────────────────────────────
+// Default: LilyGo T3-S3 V1.2/V1.3 (ESP32-S3 + SX1262)
+// For Heltec WiFi LoRa 32 V3, build with: --features heltec-v3
+
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_SPI_MOSI: i32 = 6;
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_SPI_MISO: i32 = 3;
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_SPI_SCK: i32 = 5;
+
+#[cfg(feature = "heltec-v3")]
 const PIN_SPI_MOSI: i32 = 10;
+#[cfg(feature = "heltec-v3")]
 const PIN_SPI_MISO: i32 = 11;
+#[cfg(feature = "heltec-v3")]
 const PIN_SPI_SCK: i32 = 9;
 
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_LORA_NSS: i32 = 7;
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_LORA_RST: i32 = 8;
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_LORA_BUSY: i32 = 34;
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_LORA_DIO1: i32 = 33;
 
+#[cfg(feature = "heltec-v3")]
 const PIN_LORA_NSS: i32 = 8;
+#[cfg(feature = "heltec-v3")]
 const PIN_LORA_RST: i32 = 12;
+#[cfg(feature = "heltec-v3")]
 const PIN_LORA_BUSY: i32 = 13;
+#[cfg(feature = "heltec-v3")]
 const PIN_LORA_DIO1: i32 = 14;
 
-
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_LED: i32 = 37;
+#[cfg(feature = "heltec-v3")]
 const PIN_LED: i32 = 35;
-const PIN_VEXT: i32 = 36;
 
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_VEXT: i32 = 36;
+#[cfg(feature = "heltec-v3")]
+const PIN_VEXT: i32 = 36;
 
 const PIN_BATTERY_ADC: i32 = 1;
 
-
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_I2C_SDA: i32 = 18;
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_I2C_SCL: i32 = 17;
+#[cfg(feature = "heltec-v3")]
 const PIN_I2C_SDA: i32 = 17;
+#[cfg(feature = "heltec-v3")]
 const PIN_I2C_SCL: i32 = 18;
+
+#[cfg(not(feature = "heltec-v3"))]
+const PIN_OLED_RST: i32 = 21;
+#[cfg(feature = "heltec-v3")]
 const PIN_OLED_RST: i32 = 21;
 
 

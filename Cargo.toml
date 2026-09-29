@@ -27,6 +27,8 @@ default = ["ble"]
 ble = []
 meshtastic = []
 rnode = []
+# Board selection (default: LilyGo T3-S3 V1.2/V1.3)
+heltec-v3 = []
 
 [profile.release]
 opt-level = "s"
