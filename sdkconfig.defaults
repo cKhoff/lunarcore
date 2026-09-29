@@ -15,6 +15,10 @@ CONFIG_LOG_DEFAULT_LEVEL_INFO=y
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=131072
 CONFIG_PARTITION_TABLE_SINGLE_APP_LARGE=y
 CONFIG_ADC_DISABLE_DAC=y
-# Route console/log output to USB-Serial/JTAG (native USB on ESP32-S3)
-# Required for T3-S3 / Heltec V3 which have no separate UART bridge chip.
-CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+# Route console + UART0 data to USB via ROM CDC driver.
+# On T3-S3 / Heltec V3 there is no separate UART bridge chip — the only
+# serial path is native USB. ESP_CONSOLE_USB_CDC bridges hardware UART0
+# (GPIO43/44) to the USB CDC/ACM interface, so both log output and AT
+# command I/O appear on the same USB port.
+# NOTE: mutually exclusive with ESP_CONSOLE_USB_SERIAL_JTAG (choice block).
+CONFIG_ESP_CONSOLE_USB_CDC=y

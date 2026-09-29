@@ -1841,6 +1841,10 @@ fn millis() -> u32 {
 fn init_watchdog() {
     unsafe {
 
+        // esp_task_wdt_init() returns ESP_ERR_INVALID_STATE if the TWDT
+        // was already initialized (e.g. by CONFIG_ESP_TASK_WDT_EN=y in
+        // sdkconfig). That's fine — we just need to subscribe and set
+        // up the idle hook.
         let config = esp_idf_sys::esp_task_wdt_config_t {
             timeout_ms: WATCHDOG_TIMEOUT_SEC * 1000,
             // Subscribe idle tasks on both cores so they get fed via
@@ -1849,7 +1853,12 @@ fn init_watchdog() {
             idle_core_mask: 0x3,
             trigger_panic: true,
         };
-        esp_idf_sys::esp_task_wdt_init(&config);
+        let ret = esp_idf_sys::esp_task_wdt_init(&config);
+        if ret != esp_idf_sys::esp_err_t::ESP_OK
+            && ret != esp_idf_sys::esp_err_t::ESP_ERR_INVALID_STATE
+        {
+            log::warn!("[WDT] init returned {:?} (non-fatal)", ret);
+        }
         esp_idf_sys::esp_task_wdt_add(core::ptr::null_mut());
 
         // Feed the WDT from the idle hook so the idle task never times out.
